@@ -3,10 +3,7 @@ spring:
   application:
     name: science-analysis
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@172.16.1.246:1521:ORCLCDB
-    username: C##DW
-    password: hz310012
+
 
 server:
   port: 8115

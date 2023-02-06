@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.hzsun.bigdata.sci.dao.SpecialDevDao"> 
+ 
+    <!--项目类别金额统计--> 
+    <select id="getItemClassFundStatic" resultType="com.hzsun.bigdata.sci.model.dto.DrawDTO"> 
+        <if test="type == 0"> 
+            select CONCAT(data_year,'年') as xAxisName, item_class_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_y 
+            where data_year > #{year} and four_item_code = #{fourItemCode} and item_class_name !='全部' 
+            group by CONCAT(data_year,'年'),item_class_name 
+            order by CONCAT(data_year,'年') asc 
+        </if> 
+        <if test="type == 1"> 
+            select CONCAT('第',quarter(str_to_date(DATA_MONTH),'%Y%m')),'季度' as xAxisName, item_class_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_m 
+            where four_item_code = #{fourItemCode} AND substr(DATA_MONTH,0,4) = #{year} and item_class_name != '全部' 
+            group by quarter(str_to_date(DATA_MONTH,'%Y%m')),item_class_name 
+            order by CONCAT('第',quarter(str_to_date(DATA_MONTH),'%Y%m')),'季度' asc 
+        </if> 
+        <if test="type == 2"> 
+            select CONCAT(substr(DATA_MONTH),5,2),'月' as xAxisName, item_class_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_m 
+            where four_item_code = #{fourItemCode} AND substr(DATA_MONTH,0,4) = #{year} and item_class_name != '全部' 
+            group by CONCAT(substr(DATA_MONTH),5,2),'月' ,item_class_name 
+            order by CONCAT(substr(DATA_MONTH),5,2),'月' asc 
+        </if> 
+    </select> 
+ 
+    <!--项目来源金额统计--> 
+    <select id="getItemFundSrcStatic" resultType="com.hzsun.bigdata.sci.model.dto.DrawDTO"> 
+        <if test="type == 0"> 
+            select CONCAT(data_year,'年') as xAxisName, item_origin_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_y 
+            where data_year > #{year} and four_item_code = #{fourItemCode} and item_origin_name != '全部' 
+            group by CONCAT(data_year,'年'),item_origin_name 
+            order by CONCAT(data_year,'年') asc 
+        </if> 
+        <if test="type == 1"> 
+            select CONCAT('第',quarter(str_to_date(DATA_MONTH),'%Y%m')),'季度' as xAxisName, item_origin_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_m 
+            where four_item_code = #{fourItemCode} AND substr(DATA_MONTH,0,4) = #{year} and item_origin_name != '全部' 
+            group by quarter(str_to_date(DATA_MONTH,'%Y%m')),item_origin_name 
+            order by CONCAT('第',quarter(str_to_date(DATA_MONTH),'%Y%m')),'季度' asc 
+        </if> 
+        <if test="type == 2"> 
+            select CONCAT(substr(DATA_MONTH),5,2),'月' as xAxisName, item_origin_name as yAxisItem, 
+            ROUND(sum(plan_fund_total_fee)/10000,2) as yAxisValue 
+            from tapp_sci_item_index_stat_m 
+            where four_item_code = #{fourItemCode} AND substr(DATA_MONTH,0,4) = #{year} and item_origin_name != '全部' 
+            group by CONCAT(substr(DATA_MONTH),5,2),'月',item_origin_name 
+            order by CONCAT(substr(DATA_MONTH),5,2),'月' asc 
+        </if> 
+    </select> 
+ 
+    <!--论文指标统计--> 
+    <select id="getPaperIndexStatic" resultType="com.hzsun.bigdata.sci.model.dto.PaperIndexStaticDTO"> 
+        select 
+        a.paper_no as paperNo, 
+        a.paper_chin_name as chnName, 
+        a.paper_eng_name as engName, 
+        a.unit_name as unitName, 
+        paper_type_name as paperTypeName, 
+        a.rec_stat_name as recStatName, 
+        a.other_rec_status as otherRecStatus, 
+        a.first_author as firstAuthor, 
+        a.tel_author as telAuthor, 
+        b.prdc_name as prdcName, 
+        DATE_FORMAT(b.publ_day,'%Y-%m-%d') as publDay 
+        from ${paperTableName} a left join ${pubTableName} b 
+        on a.paper_no = b.paper_no 
+        where DATE_FORMAT(b.publ_day,'yyyy') = #{year} 
+        order by a.paper_no asc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--论文指标统计(计数)--> 
+    <select id="getPaperIndexStaticCount" resultType="java.lang.Integer"> 
+        select 
+        count(1) 
+        from ${paperTableName} a left join ${pubTableName} b 
+        on a.paper_no = b.paper_no 
+        where DATE_FORMAT(b.publ_day,'yyyy') = #{year} 
+    </select> 
+ 
+    <!--获奖列表--> 
+    <select id="getAwardList" resultType="com.hzsun.bigdata.sci.model.dto.AwardListDTO"> 
+        select 
+        win_achv_no as winAchvNo, 
+        win_achv_name as winAchvName, 
+        item_src_name as itemSrcName, 
+        unit_name as unitName, 
+        DATE_FORMAT(win_date,'%Y-%m-%d') as winDate, 
+        win_achv_cls_name as winAchvClsName, 
+        win_achv_cls_name as techWinAchvClsName, 
+        awrd_lv_name as awrdLvName, 
+        win_rank_name as winRankName, 
+        grant_awrd_unit as grantAwrdUnit, 
+        unit_rank as unitRank, 
+        charge_pnsl_rank as chargePnslRank, 
+        auther_name as autherName, 
+        subj_class_name as subjClassName, 
+        (case tech_achv_lv_no 
+        when   '1'   then  'A' 
+        when   '2'    then  'A1' 
+        when   '3'    then  'A2' 
+        when   '4'    then  'A3' 
+        when   '5'    then  'B' 
+        when   '6'    then  'C' 
+        when   '7'    then  'D' 
+        else '其他' end) as techAchvLvName, 
+        (case four_item_code 
+        when   '1'   then  '科学研究' 
+        when   '2'    then  '队伍建设' 
+        when   '3'     then  '人才培养' 
+        when   '4'    then  '国际合作交流' 
+        else '其他' end) as fourItemName 
+        from ${awardTableName} 
+        where DATE_FORMAT(win_date,'yyyy') = #{year} 
+        order by win_achv_no asc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--获奖列表(计数)--> 
+    <select id="getAwardListCount" resultType="java.lang.Integer"> 
+        select count(1) from ${awardTableName}  where DATE_FORMAT(win_date,'yyyy') = #{year} 
+    </select> 
+ 
+    <!--平台基地列表--> 
+    <select id="getOrganBaseList" resultType="com.hzsun.bigdata.sci.model.dto.OrganBaseListDTO"> 
+        select 
+        charge_psnl_staff_no as chargePsnlStaffNo, 
+        charge_psnl_name as chargePsnlName, 
+        organ_name as organName, 
+        organ_type as organType, 
+        apv_mon as apvMon, 
+        DATE_FORMAT(prev_eval_day, '%Y-%m-%d') as prevEvalDay, 
+        prev_eval_result as prevEvalResult 
+        from ${organTableName} 
+        where substr(apv_mon,0,4) = #{year} 
+        order by charge_psnl_staff_no asc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--平台基地列表(计数)--> 
+    <select id="getOrganBaseListCount" resultType="java.lang.Integer"> 
+        select count(1) from ${organTableName} where substr(apv_mon,0,4) = #{year} 
+    </select> 
+ 
+    <!--成果转化列表--> 
+    <select id="getAchvPatentList" resultType="com.hzsun.bigdata.sci.model.dto.AchvPatentListDTO"> 
+        select 
+        a.patent_achv_no as patentAchvNo, 
+        a.patent_achv_name as patentAchvName, 
+        a.unit_name as unitName, 
+        a.patent_type_name as patentTypeName, 
+        DATE_FORMAT(a.apv_day,'%Y-%m-%d') as apvDay, 
+        a.patent_cert_no as patentCertNo, 
+        a.pay_patent_fee_day as payPatentFeeDay, 
+        a.pay_fee as payFee, 
+        a.auth_annc_day as authAnncDay, 
+        a.apply_name as applyName, 
+        a.patent_agency_organ as patentAgencyOrgan, 
+        a.patent_agency_psnl as patentAgencyPsnl, 
+        a.patentee_name as patenteeName, 
+        a.patent_end_day  as patentEndDay, 
+        (case a.tech_achv_lv_no 
+        when   '1'   then  'A' 
+        when   '2'    then  'A1' 
+        when   '3'    then  'A2' 
+        when   '4'   then  'A3' 
+        when   '5'    then  'B' 
+        when   '6'    then  'C' 
+        when   '7'    then  'D' 
+        else '其他' end) as techAchvLvName, 
+        (case a.four_item_code 
+        when   '1'   then  '科学研究' 
+        when   '2'    then  '队伍建设' 
+        when   '3'    then  '人才培养' 
+        when   '4'    then  '国际合作交流' 
+        else '其他' end) as fourItemName, 
+        b.sale_date as saleDate, 
+        b.sale_money as saleMoney, 
+        b.sale_unit as saleUnit, 
+        b.cur_year_actul_income as curYaerActulIncome 
+        from ${patentTableName} a left join ${saleTableName} b 
+        on a.patent_achv_no = b.patent_achv_no 
+        where DATE_FORMAT(a.apv_day,'yyyy') = #{year} 
+        order by a.patent_achv_no asc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--成果转化列表(计数)--> 
+    <select id="getAchvPatentListCount" resultType="java.lang.Integer"> 
+        select count(1) from ${patentTableName} where DATE_FORMAT(apv_day,'yyyy') = #{year} 
+    </select> 
+</mapper> 

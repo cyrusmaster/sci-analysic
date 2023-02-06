@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.hzsun.bigdata.sci.dao.SubjDynamicDao"> 
+ 
+    <!--研究热点词汇统计--> 
+    <select id="getHotWordSummary" parameterType="com.hzsun.bigdata.sci.model.qo.SubjDynamicQO" 
+            resultType="com.hzsun.bigdata.sci.model.dto.HotWordSummaryDTO"> 
+        SELECT 
+        a.searDocsNum, 
+        a.hotWordNum, 
+        b.popularWord, 
+        b.appearCnt, 
+        b.hotValue 
+        FROM 
+        ( SELECT sum( sear_docs_num ) AS searDocsNum, count( 1 ) AS hotWordNum 
+        from tdwb_sci_subj_sci_hot_word_info_y_${year} 
+        where data_year = #{year} 
+        <if test="subjClassCode != null and subjClassCode != '' ">and subj_class_code = ${subjClassCode}</if> 
+        <if test="subjFiledCode != null and subjFiledCode != '' ">and prima_subj_code = ${subjFiledCode}</if> 
+        <if test="langClass != null and langClass != '' ">and lang_class = ${langClass}</if>) a, 
+        ( 
+        SELECT 
+        first_VALUE ( hot_word ) over ( ORDER BY appear_cnt DESC ) AS popularWord, 
+        first_VALUE ( appear_cnt ) over ( ORDER BY appear_cnt DESC ) AS appearCnt, 
+        first_VALUE ( hot_value ) over ( ORDER BY appear_cnt DESC ) AS hotValue 
+        from tdwb_sci_subj_sci_hot_word_info_y_${year} 
+        where data_year = #{year} 
+        <if test="subjClassCode != null and subjClassCode != '' ">and subj_class_code = #{subjClassCode}</if> 
+        <if test="subjFiledCode != null and subjFiledCode != '' ">and prima_subj_code = #{subjFiledCode}</if> 
+        <if test="langClass != null and langClass != '' ">and lang_class = #{langClass}</if> 
+        limit  0,1 
+        ) b 
+    </select> 
+ 
+    <!--热点词汇详情--> 
+    <select id="getHotWordList" parameterType="com.hzsun.bigdata.sci.model.qo.SubjDynamicQO" 
+            resultType="com.hzsun.bigdata.sci.model.dto.HotWordDetailDTO"> 
+        select hot_word as hotWord,appear_cnt as appearCnt,hot_value as hotValue 
+        from tdwb_sci_subj_sci_hot_word_info_y_${year} 
+        where data_year = #{year} 
+        <if test="subjClassCode != null and subjClassCode != '' ">and subj_class_code = #{subjClassCode}</if> 
+        <if test="subjFiledCode != null and subjFiledCode != '' ">and prima_subj_code = #{subjFiledCode}</if> 
+        <if test="langClass != null and langClass != '' ">and lang_class = #{langClass}</if> 
+        order by appear_cnt desc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--热词趋势图表--> 
+    <select id="getHotWordTrendDraw" parameterType="com.hzsun.bigdata.sci.model.qo.SubjDynamicQO" 
+            resultType="com.hzsun.bigdata.sci.model.dto.DrawDTO"> 
+        select data_year as xAxisName,'出现次数' as yAxisItem,appear_cnt as yAxisValue 
+        from tdwb_sci_subj_sci_hot_word_info_y_${year} 
+        where hot_word = #{hotWord} 
+        and data_year > #{year}-10 
+        order by data_year asc 
+    </select> 
+ 
+    <!--学科前沿和热点论文--> 
+    <select id="getHotPaperDetail" parameterType="com.hzsun.bigdata.sci.model.qo.SubjDynamicQO" 
+            resultType="com.hzsun.bigdata.sci.model.dto.HotPaperDTO"> 
+        select 
+        paper_name as paperName, 
+        author_name as firstAuthor, 
+        publ_year as publDay, 
+        prima_subj_name as subjName, 
+        journal_src_code as prdcName, 
+        cited_times as citeCnt 
+        from tdwb_sci_subj_sci_paper_info_y_${year} 
+        where 1=1 
+        <if test="subjClassCode != null and subjClassCode != '' ">and subj_class_code = #{subjClassCode}</if> 
+        <if test="subjFiledCode != null and subjFiledCode != '' ">and prima_subj_code = #{subjFiledCode}</if> 
+        <if test="langClass != null and langClass != '' ">and lang_class = #{langClass}</if> 
+        order by cited_times desc 
+        limit #{limit} ,#{offset} 
+    </select> 
+ 
+    <!--学科前沿和热点论文(计数)--> 
+    <select id="getHotPaperDetailCount" parameterType="com.hzsun.bigdata.sci.model.qo.SubjDynamicQO" 
+            resultType="java.lang.Integer"> 
+        select 
+        count(1) 
+        from tdwb_sci_subj_sci_paper_info_y_${year} 
+        where 1=1 
+        <if test="subjClassCode != null and subjClassCode != '' ">and subj_class_code = #{subjClassCode}</if> 
+        <if test="subjFiledCode != null and subjFiledCode != '' ">and prima_subj_code = #{subjFiledCode}</if> 
+        <if test="langClass != null and langClass != '' ">and lang_class = #{langClass}</if> 
+    </select> 
+</mapper> 

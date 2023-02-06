@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hzsun.bigdata.sci.dao.SciSearchDao">
+    <!--论文 上部-->
+    <select id="getPaperTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchPaperDTO">
+SELECT sum(total_papr_num) AS totalPaperNum, sum(total_scie_paper_num) AS sciePaperNum
+	, sum(total_ssci_paper_num) AS ssciPaperNum, +sum(total_cscd_papr_num) AS cscdPaperNum
+FROM tapp_sci_sci_paper_info_search_d
+WHERE data_day >= STR_TO_DATE(#{starttime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endtime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--论文 下部-->
+    <select id="getPaperEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchPaperDTO">
+SELECT a.paper_chin_name AS paperChnName, a.paper_eng_name AS paperEngName, a.first_author AS firstAuthor, a.tel_author AS telAuthor, b.prdc_name AS prdcName
+FROM ${tableName} a, ${tableNameSecond} b
+WHERE a.paper_no = b.paper_no
+	AND b.publ_day >= STR_TO_DATE(#{starttime}, 'yyyymmdd')
+	AND b.publ_day <= STR_TO_DATE(#{endtime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and a.unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and a.subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and a.four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and a.staff_title = #{techTitle}
+        </if>
+        order by a.paper_no asc
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--论文 下部(计数)-->
+    <select id="getPaperEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+SELECT count(1)
+FROM ${tableName} a, ${tableNameSecond} b
+WHERE a.paper_no = b.paper_no
+	AND b.publ_day >= STR_TO_DATE(#{starttime}, 'yyyymmdd')
+	AND b.publ_day <= STR_TO_DATE(#{endtime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and a.unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and a.subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and a.four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and a.staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--项目 上部-->
+    <select id="getItemTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchItemDTO">
+SELECT sum(total_item_num) AS totalItemNum, sum(total_hori_item_num) AS totalHItemNum
+	, sum(total_vertical_item_num) AS totalVItemNum
+FROM tapp_sci_sci_item_info_search_d
+WHERE data_day >= STR_TO_DATE(#{starttime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endtime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--项目 下部-->
+    <select id="getItemEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchItemDTO">
+SELECT item_no, item_name AS itemName, DATE_FORMAT(start_day, '%Y-%m-%d') AS startDay
+	, DATE_FORMAT(end_day, '%Y-%m-%d') AS endDay, item_leader_staff_name AS leaderName
+	, item_rank_name AS itemRank, item_class_name AS itemClassName, item_fund_src_name AS fundSrcName
+	, ROUND(sum(plan_fund_total_fee) / 10000, 2) AS fundTotalFee
+	, ROUND(sum(cur_acct_fund_fee) / 10000, 2) AS curFundFee
+FROM ${tableName}
+WHERE END_DAY >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND END_DAY <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+        group by item_no,item_name,start_day,end_day,item_leader_staff_name,
+        item_rank_name,item_class_name,item_fund_src_name
+        order by item_no asc
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--项目 下部(计数)-->
+    <select id="getItemEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+SELECT count(1)
+FROM ${tableName}
+WHERE END_DAY >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND END_DAY <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--获奖 上部-->
+    <select id="getAwardTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchAwardDTO">
+SELECT sum(total_win_achv_num) AS winAchvNum, sum(total_ctry_win_achv_num) AS ctryWinAchvNum
+	, sum(total_intl_win_achv_num) AS intlWinAchvNum, sum(total_other_win_achv_num) AS otherWinAchvNum
+FROM tapp_sci_sci_win_achv_info_search_d
+WHERE data_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--获奖 下部-->
+    <select id="getAwardEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchAwardDTO">
+        select
+        win_achv_no,
+        win_achv_name as winAchvName,
+        item_src_name as itemSrcName,
+        unit_name as unitName,
+        DATE_FORMAT(win_date,'%Y-%m-%d') as winDate,
+        win_achv_cls_name as winAchvClsName,
+        win_achv_cls_name as techWinAchvClsName,
+        awrd_lv_name as awrdLvName,
+        win_rank_name as winRankName,
+        grant_awrd_unit as grantAwrdUnit,
+        unit_rank as unitRank,
+        charge_pnsl_rank as chargePnslRank,
+        auther_name as autherName,
+        (case tech_achv_lv_no
+        when '1' then 'A'
+        when '2' then 'A1'
+        when '3' then 'A2'
+        when '4' then 'A3'
+        when '5' then 'B'
+        when '6' then 'C'
+        when '7' then 'D'
+        else '其他' end) as techAchvLvName
+        from ${tableName}
+       where win_date >= STR_TO_DATE(#{startTime},'yyyymmdd') and win_date <= STR_TO_DATE(#{endTime},'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+        order by win_achv_no asc
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--获奖 下部(计数)-->
+    <select id="getAwardEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+      SELECT count(1)
+FROM ${tableName}
+WHERE win_date >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND win_date <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--平台基地 上部-->
+    <select id="getOrganTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchOrganDTO">
+        select
+        SELECT sum(total_organ_num) AS totalOrganNum, sum(total_base_resc_organ_num) AS baseRescOrganNum
+	, sum(total_app_resc_organ_num) AS appRescOrganNum, sum(total_theory_resc_organ_num) AS theoryRescOrganNum
+FROM tapp_sci_sci_organ_info_search_d
+WHERE data_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--平台基地 下部-->
+    <select id="getOrganEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchOrganDTO">
+     SELECT charge_psnl_staff_no, charge_psnl_name AS chargePsnlName, organ_name AS organName, organ_type AS organTypeName, apv_mon AS apvMon
+	, DATE_FORMAT(prev_eval_day, '%Y-%m-%d') AS prevEvalDay, prev_eval_result AS prevEvalResult
+FROM ${tableName}
+WHERE prev_eval_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND prev_eval_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+        order by charge_psnl_staff_no
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--平台基地 下部(计数)-->
+    <select id="getOrganEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+    SELECT count(1)
+FROM ${tableName}
+WHERE prev_eval_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND prev_eval_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--专利 上部-->
+    <select id="getPatentTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchPatentDTO">
+        SELECT sum(total_patent_achv_num) AS totalPatentAchvNum, sum(total_invent_patent_achv_num) AS inventPatentAchvNum
+	, sum(total_unil_model_patent_achv_num) AS unilModelPatentAchvNum, sum(total_pct_patent_achv_num) AS pctPatentAchvNum
+FROM tapp_sci_sci_patent_achv_info_search_d
+WHERE data_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--专利 下部-->
+    <select id="getPatentEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchPatentDTO">
+       SELECT patent_achv_no, patent_achv_name AS patentAchvName, unit_name AS unitName
+	, (
+		SELECT dim_name
+		FROM TPUB_DIM_CLASS
+		WHERE dim_class = 'edu_sci_pat_type'
+			AND dim_value = patent_type_code
+	) AS patentTypeName, DATE_FORMAT(apv_day, '%Y-%m-%d') AS apvDay, patent_cert_no AS patentCertNo
+	, DATE_FORMAT(pay_patent_fee_day, '%Y-%m-%d') AS payPatentFeeDay, pay_fee AS payFee
+	, DATE_FORMAT(auth_annc_day, '%Y-%m-%d') AS authAnncDay, apply_name AS applyName
+	, patent_agency_organ AS patentAgencyOrgan, patent_agency_psnl AS patentAgencyPsnl, patentee_name AS patenteeName, patent_end_day AS patentEndDay
+	, CASE tech_achv_lv_no
+		WHEN '1' THEN 'A'
+		WHEN '2' THEN 'A1'
+		WHEN '3' THEN 'A2'
+		WHEN '4' THEN 'A3'
+		WHEN '5' THEN 'B'
+		WHEN '6' THEN 'C'
+		WHEN '7' THEN 'D'
+		ELSE '其他'
+	END AS techAchvLvName
+FROM ${tableName}
+WHERE apv_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND apv_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+        order by patent_achv_no asc
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--专利 下部(计数)-->
+    <select id="getPatentEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+        SELECT count(1)
+FROM ${tableName}
+WHERE apv_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND apv_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--会议报告 上部-->
+    <select id="getReportTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchReportDTO">
+        SELECT sum(total_acad_conf_num) AS totalAcadConfNum, sum(total_intl_acad_conf_num) AS intlAcadConfNum
+	, sum(total_ctry_acad_conf_num) AS ctryAcadConfNum, sum(total_other_acad_conf_num) AS otherAcadConfNum
+FROM tapp_sci_sci_acad_conf_info_search_d
+WHERE data_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+    </select>
+
+    <!--会议报告 下部-->
+    <select id="getReportEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchReportDTO">
+       SELECT acad_conf_no, acad_conf_name AS acadConfName, acad_conf_place AS acadConfPlace
+	, DATE_FORMAT(acad_conf_start_date, '%Y-%m-%d') AS acadConfStartDate
+	, DATE_FORMAT(acad_conf_end_date, '%Y-%m-%d') AS acadConfEndDate, hold_unit AS holdUnit
+	, acad_conf_psnl_num AS acadConfPsnlNum, attend_unit AS attendUnit
+	, ROUND(input_fund / 10000, 2) AS inputFund
+	, paper_num AS paperNum
+FROM ${tableName}
+WHERE acad_conf_end_date >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND acad_conf_end_date <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        order by acad_conf_no asc
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--会议报告 下部(计数)-->
+    <select id="getReportEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+        SELECT count(1)
+FROM ${tableName}
+WHERE acad_conf_end_date >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND acad_conf_end_date <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+    </select>
+
+    <!--专著 上部-->
+    <select id="getTechWorkTop" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchTechWorkDTO">
+        SELECT sum(total_tech_work_num) AS totalTechWorkNum, sum(total_intl_tech_work_num) AS intlTechWorkNum
+	, sum(total_ctry_tech_work_num) AS ctryTechWorkNum, sum(total_other_tech_work_num) AS otherTechWorkNum
+FROM tapp_sci_sci_tech_work_info_search_d
+WHERE data_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND data_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+	AND item_class_no = #{itemClass}
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+
+    <!--专著 下部-->
+    <select id="getTechWorkEndList" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="com.hzsun.bigdata.sci.model.dto.SciSearchTechWorkDTO">
+        SELECT tech_work_no, tech_work_chin_name AS techWorkChinName, tech_work_eng_name AS techWorkEngName, unit_name AS unitName, publ_name AS publName
+	, DATE_FORMAT(publ_day, '%Y-%m-%d') AS publDay, publ_no AS publNo
+	, tech_work_words_num AS techWorkWordsNum
+	, CASE tech_achv_lv_no
+		WHEN '1' THEN 'A'
+		WHEN '2' THEN 'A1'
+		WHEN '3' THEN 'A2'
+		WHEN '4' THEN 'A3'
+		WHEN '5' THEN 'B'
+		WHEN '6' THEN 'C'
+		WHEN '7' THEN 'D'
+		ELSE '其他'
+	END AS techAchvLvName
+FROM ${tableName}
+WHERE publ_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND publ_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+        order by tech_work_no
+        limit #{limit} ,#{offset}
+    </select>
+
+    <!--专著 下部(计数)-->
+    <select id="getTechWorkEndListCount" parameterType="com.hzsun.bigdata.sci.model.qo.SciSearchQO"
+            resultType="java.lang.Integer">
+        SELECT count(1)
+FROM ${tableName}
+WHERE publ_day >= STR_TO_DATE(#{startTime}, 'yyyymmdd')
+	AND publ_day <= STR_TO_DATE(#{endTime}, 'yyyymmdd')
+        <if test="unitNo != null and unitNo != '' ">
+            and unit_no = #{unitNo}
+        </if>
+        <if test="subject != null and subject != '' ">
+            and subj_class_code = #{subject}
+        </if>
+        <if test="fourItemCode != null and fourItemCode != '' ">
+            and four_item_code = #{fourItemCode}
+        </if>
+        <if test="techTitle != null and techTitle != '' ">
+            and staff_title = #{techTitle}
+        </if>
+    </select>
+</mapper>

@@ -151,18 +151,22 @@
     </select>
 
     <!--科研横向项目数量统计-->
+    <!---->
     <select id="getCountProjectHDraw" resultType="com.hzsun.bigdata.sci.model.dto.DrawDTO">
         <if test="type == 0">
 SELECT *
 FROM (
-	SELECT CONCAT(data_year, '年') AS xAxisName, '全部' AS yAxisItem, hori_item_num AS yAxisValue
-	FROM tapp_sci_unit_item_stat_y
+	SELECT CONCAT(data_year, '年') AS xAxisName, '全部' AS yAxisItem, item_cnt AS yAxisValue
+	FROM tapp_sci_unit_item_cnt_y
 	WHERE unit_no = '-999'
+	AND item_chnl =  '1'
 		AND data_year > #{year}
 	UNION ALL
-	SELECT CONCAT(data_year, '年') AS xAxisName, '百万以上' AS yAxisItem, hori_million_item_num AS yAxisValue
-	FROM tapp_sci_unit_item_stat_y
+	SELECT CONCAT(data_year, '年') AS xAxisName, '百万以上' AS yAxisItem, item_cnt AS yAxisValue
+	FROM tapp_sci_unit_item_cnt_y
 	WHERE unit_no = '-999'
+	AND item_chnl =  '1'
+	AND item_flag =  '1'
 		AND data_year > #{year}
 )
 ORDER BY xAxisName ASC
@@ -170,14 +174,14 @@ ORDER BY xAxisName ASC
         <if test="type == 1">
  SELECT *
 FROM (
-	SELECT concat('第', quarter(str_STR_TO_DATE(data_month), '%y%m'))
-		, '季度' AS xAxisName, '全部' AS yAxisItem, sum(hori_item_num) AS yAxisValue
+	SELECT concat('第', quarter(STR_TO_DATE(data_month), '%y%m'))
+		, '季度' ) AS xAxisName, '全部' AS yAxisItem, sum(hori_item_num) AS yAxisValue
 	FROM tapp_sci_unit_item_stat_m
 	WHERE unit_no = '-999'
 		AND substr(DATA_MONTH, 0, 4) = #{year}
-	GROUP BY quarter(str_STR_TO_DATE(data_month, '%y%m'))
+	GROUP BY quarter(STR_TO_DATE(data_month, '%y%m'))
 	UNION ALL
-	SELECT concat('第', quarter(str_STR_TO_DATE(data_month), '%y%m'))
+	SELECT concat('第', quarter(STR_TO_DATE(data_month), '%y%m'))
 		, '季度' AS xAxisName, '百万以上' AS yAxisItem, sum(hori_million_item_num) AS yAxisValue
 	FROM tapp_sci_unit_item_stat_m
 	WHERE unit_no = '-999'
